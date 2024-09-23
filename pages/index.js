@@ -5,15 +5,24 @@ import axios from 'axios';
 export default function Home() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false); // New loading state
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading state
 
     try {
       const response = await axios.post('/api/subscribe', { email });
       setMessage(response.data.message);
     } catch (error) {
-      setMessage(error.response.data.error);
+      // Handle error responses
+      if (error.response) {
+        setMessage(error.response.data.error);
+      } else {
+        setMessage('An unexpected error occurred. Please try again later.');
+      }
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -28,7 +37,9 @@ export default function Home() {
           placeholder="Email address"
           required
         />
-        <button type="submit">Subscribe</button>
+        <button type="submit" disabled={loading}> {/* Disable button while loading */}
+          {loading ? 'Subscribing...' : 'Subscribe'}
+        </button>
       </form>
       {message && <p>{message}</p>}
     </div>
